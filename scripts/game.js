@@ -20,6 +20,30 @@ var maxScore = 7;
 // set opponent reflexes (0 - easiest, 1 - hardest)
 var difficulty = 0.2;
 
+video = document.createElement( 'video' );
+video.src = "content/sample.mp4";
+video.crossOrigin = "anonymous";
+video.load();
+video.play();
+
+videoImage = document.createElement( 'canvas' );
+videoImage.width = 480;
+videoImage.height = 204;
+
+videoImageContext = videoImage.getContext( '2d' );
+// background color if no video present
+videoImageContext.fillStyle = '#000000';
+videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+
+videoTexture = new THREE.Texture( videoImage );
+videoTexture.minFilter = THREE.LinearFilter;
+videoTexture.magFilter = THREE.LinearFilter;
+	
+var movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture, overdraw: true, side:THREE.DoubleSide } );
+
+
+
+
 // ------------------------------------- //
 // ------- GAME FUNCTIONS -------------- //
 // ------------------------------------- //
@@ -131,7 +155,7 @@ function createScene()
 		planeQuality,
 		planeQuality),
 
-	  planeMaterial);
+	  movieMaterial);
 	  
 	scene.add(plane);
 	plane.receiveShadow = true;	
@@ -324,8 +348,16 @@ function createScene()
 
 function draw()
 {	
+
 	// draw THREE.JS scene
 	renderer.render(scene, camera);
+
+	if ( video.readyState === video.HAVE_ENOUGH_DATA ) 
+	{
+		videoImageContext.drawImage( video, 0, 0 );
+		if ( videoTexture ) 
+			videoTexture.needsUpdate = true;
+	}
 	// loop draw function call
 	requestAnimationFrame(draw);
 	
@@ -508,8 +540,6 @@ function paddlePhysics()
 			// and if ball is travelling towards player (-ve direction)
 			if (ballDirX < 0)
 			{
-				// stretch the paddle to indicate a hit
-				paddle1.scale.y = 15;
 				// switch direction of ball travel to create bounce
 				ballDirX = -ballDirX;
 				// we impact ball angle when hitting it
@@ -535,8 +565,6 @@ function paddlePhysics()
 			// and if ball is travelling towards opponent (+ve direction)
 			if (ballDirX > 0)
 			{
-				// stretch the paddle to indicate a hit
-				paddle2.scale.y = 15;	
 				// switch direction of ball travel to create bounce
 				ballDirX = -ballDirX;
 				// we impact ball angle when hitting it
