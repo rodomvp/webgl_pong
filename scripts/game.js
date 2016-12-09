@@ -20,29 +20,8 @@ var maxScore = 7;
 // set opponent reflexes (0 - easiest, 1 - hardest)
 var difficulty = 0.2;
 
-video = document.createElement( 'video' );
-video.src = "content/sample.mp4";
-video.crossOrigin = "anonymous";
-video.load();
-video.play();
-
-videoImage = document.createElement( 'canvas' );
-videoImage.width = 480;
-videoImage.height = 204;
-
-videoImageContext = videoImage.getContext( '2d' );
-// background color if no video present
-videoImageContext.fillStyle = '#000000';
-videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
-
-videoTexture = new THREE.Texture( videoImage );
-videoTexture.minFilter = THREE.LinearFilter;
-videoTexture.magFilter = THREE.LinearFilter;
-	
-var movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture, overdraw: true, side:THREE.DoubleSide } );
-
-
-
+// setup video textures
+var video, videoImage, videoImageContext, videoTexture, movieMaterial
 
 // ------------------------------------- //
 // ------- GAME FUNCTIONS -------------- //
@@ -64,8 +43,34 @@ function setup()
 	draw();
 }
 
+function makeVtex(source)
+{
+	video = document.createElement( 'video' );
+	video.src = source;
+	video.crossOrigin = "anonymous";
+	video.load();
+	video.play();
+
+	videoImage = document.createElement( 'canvas' );
+	videoImage.width = 1240;
+	videoImage.height = 700;
+
+	videoImageContext = videoImage.getContext( '2d' );
+	// background color if no video present
+	videoImageContext.fillStyle = '#000000';
+	videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+
+
+	videoTexture = new THREE.Texture( videoImage );
+	videoTexture.minFilter = THREE.LinearFilter;
+	videoTexture.magFilter = THREE.LinearFilter;
+	
+	movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture, overdraw: .5, side:THREE.DoubleSide } );
+}
+
 function createScene()
 {
+	makeVtex("content/sample.mp4")
 	// set the scene size
 	var WIDTH = 640,
 	  HEIGHT = 360;
@@ -119,12 +124,6 @@ function createScene()
 	  new THREE.MeshLambertMaterial(
 		{
 		  color: 0xFF4045
-		});
-	// create the plane's material	
-	var planeMaterial =
-	  new THREE.MeshLambertMaterial(
-		{
-		  color: 0x4BD121
 		});
 	// create the table's material
 	var tableMaterial =
@@ -254,55 +253,7 @@ function createScene()
 	
 	// lift paddles over playing surface
 	paddle1.position.z = paddleDepth;
-	paddle2.position.z = paddleDepth;
-		
-	// we iterate 10x (5x each side) to create pillars to show off shadows
-	// this is for the pillars on the left
-	for (var i = 0; i < 5; i++)
-	{
-		var backdrop = new THREE.Mesh(
-		
-		  new THREE.CubeGeometry( 
-		  30, 
-		  30, 
-		  300, 
-		  1, 
-		  1,
-		  1 ),
 
-		  pillarMaterial);
-		  
-		backdrop.position.x = -50 + i * 100;
-		backdrop.position.y = 230;
-		backdrop.position.z = -30;		
-		backdrop.castShadow = true;
-		backdrop.receiveShadow = true;		  
-		scene.add(backdrop);	
-	}
-	// we iterate 10x (5x each side) to create pillars to show off shadows
-	// this is for the pillars on the right
-	for (var i = 0; i < 5; i++)
-	{
-		var backdrop = new THREE.Mesh(
-
-		  new THREE.CubeGeometry( 
-		  30, 
-		  30, 
-		  300, 
-		  1, 
-		  1,
-		  1 ),
-
-		  pillarMaterial);
-		  
-		backdrop.position.x = -50 + i * 100;
-		backdrop.position.y = -230;
-		backdrop.position.z = -30;
-		backdrop.castShadow = true;
-		backdrop.receiveShadow = true;		
-		scene.add(backdrop);	
-	}
-	
 	// finally we finish by adding a ground plane
 	// to show off pretty shadows
 	var ground = new THREE.Mesh(
@@ -576,6 +527,7 @@ function paddlePhysics()
 	}
 }
 
+
 function resetBall(loser)
 {
 	// position the ball in the center of the table
@@ -591,8 +543,7 @@ function resetBall(loser)
 	else
 	{
 		ballDirX = 1;
-	}
-	
+	}	
 	// set the ball to move +ve in y plane (towards left from the camera)
 	ballDirY = 1;
 }
